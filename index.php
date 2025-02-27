@@ -28,6 +28,7 @@ require_once 'config.php'; // Inclui o arquivo de configuração da conexão com
                 <li><a href="restaurantes.php">Restaurantes</a></li>
                 <li><a href="sobre.php">Sobre</a></li>
                 <li><a href="contacto.php">Contacto</a></li>
+                <li><a href="login.php" class="login-button">Login</a></li>
             </ul>
         </nav>
     </header>

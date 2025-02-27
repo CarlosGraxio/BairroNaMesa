@@ -11,35 +11,41 @@
         <h1>Login</h1>
 
         <?php
+        require_once 'config.php';
+        
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $email = $_POST['email'];
-            $senha = $_POST['senha'];
-
-            // Conexão com o banco de dados
-            $conn = new mysqli('localhost', 'root', 'root', 'cinenow');
-
-            // Verificar conexão
-            if ($conn->connect_error) {
-                die("Conexão falhou: " . $conn->connect_error);
-            }
-
-            // Query preparada para evitar SQL Injection
-            $sql = "SELECT * FROM utilizadores WHERE email = ? AND senha = ?";
-            $stmt = $conn->prepare($sql);
+            $email = trim($_POST['email']);
+            $senha = trim($_POST['senha']);
             
-            $stmt->bind_param("ss", $email, $senha);
-            $stmt->execute();
-            $result = $stmt->get_result();
-
-            if ($result->num_rows > 0) {
-                echo "<p style='color: green;'>Login bem sucedido!</p>";
+            if (empty($email) || empty($senha)) {
+                echo "<p style='color: red;'>Preencha todos os campos.</p>";
             } else {
-                echo "<p style='color: red;'>Email ou senha incorretos.</p>";
+                $conn = new mysqli("localhost", "root", "", "Bairro_Mesa");
+                
+                if ($conn->connect_error) {
+                    die("Conexão falhou: " . $conn->connect_error);
+                }
+                
+                $sql = "SELECT * FROM utilizadores WHERE email = ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("s", $email);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                
+                if ($result->num_rows > 0) {
+                    $user = $result->fetch_assoc();
+                    if (password_verify($senha, $user['senha'])) {
+                        echo "<p style='color: green;'>Login bem sucedido!</p>";
+                    } else {
+                        echo "<p style='color: red;'>Senha incorreta.</p>";
+                    }
+                } else {
+                    echo "<p style='color: red;'>Email não encontrado.</p>";
+                }
+                
+                $stmt->close();
+                $conn->close();
             }
-
-            // Fechar conexões
-            $stmt->close();
-            $conn->close();
         }
         ?>
 
@@ -54,6 +60,7 @@
             <button type="submit">Entrar</button>
         </form>
         <p>Não tem uma conta? <a href="registar.php">Registar</a></p>
+        <p><a href="javascript:history.back()">Voltar</a></p>
     </div>
 </body>
 </html>

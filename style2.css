@@ -1,118 +1,89 @@
-/* style.css */
-
-/* Reset básico */
+/* Reset básico para remover margens e paddings padrão */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Arial', sans-serif;
+    font-family: Arial, sans-serif;
 }
 
-/* Corpo da página */
 body {
-    background-color: #f4f4f4;
+    background-color: #f8f8f8;
+    color: #333;
+    text-align: center;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    margin: 0;
 }
 
-/* Container do formulário de login */
 .login-container {
-    background-color: #fff;
-    padding: 30px;
+    background: white;
+    padding: 40px;
     border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    width: 350px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
     text-align: center;
 }
 
-/* Título do formulário */
 h1 {
-    font-size: 2em;
+    font-size: 26px;
     margin-bottom: 20px;
-    color: #333;
+    color: #ff6600;
 }
 
-/* Mensagens de erro ou sucesso */
-p {
-    font-size: 1em;
-    margin-bottom: 20px;
-}
-
-p[style*="color: green"] {
-    color: green;
-}
-
-p[style*="color: red"] {
-    color: red;
-}
-
-/* Formulário */
 form {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 15px;
+    width: 100%;
 }
 
-/* Labels */
 label {
-    font-size: 1em;
-    text-align: left;
-    color: #555;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    align-self: flex-start;
+    margin-left: 10%;
 }
 
-/* Inputs de texto */
-input[type="email"],
-input[type="password"] {
-    padding: 12px;
+input {
+    width: 80%;
+    padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    font-size: 1em;
-    transition: border-color 0.3s;
+    font-size: 16px;
 }
 
-input[type="email"]:focus,
-input[type="password"]:focus {
-    border-color: #007BFF;
-    outline: none;
-}
-
-/* Botão de login */
 button {
-    background-color: #007BFF;
+    background-color: #ff6600;
     color: white;
-    padding: 14px;
     border: none;
-    border-radius: 5px;
-    font-size: 1em;
     cursor: pointer;
     transition: background-color 0.3s;
+    padding: 10px;
+    font-weight: bold;
+    width: 85%;
+    border-radius: 5px;
+    font-size: 16px;
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #e65c00;
 }
 
-/* Link para registro */
-a {
-    color: #007BFF;
+p {
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+p a {
+    color: #ff6600;
     text-decoration: none;
+    font-weight: bold;
 }
 
-a:hover {
+p a:hover {
     text-decoration: underline;
-}
-
-/* Responsividade */
-@media (max-width: 480px) {
-    .login-container {
-        width: 90%;
-        padding: 20px;
-    }
-
-    h1 {
-        font-size: 1.5em;
-    }
 }
