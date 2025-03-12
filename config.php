@@ -1,15 +1,15 @@
 <?php
+// config.php
 $host = "localhost";
-$dbname = "bairro_mesa";
-$username = "root";
+$user = "root";
 $password = "";
-$site_name = "Bairro na Mesa";
+$database = "bairro_mesa";
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    echo "";
-} catch (PDOException $e) {
-    die("Erro na conexão: " . $e->getMessage());
+$conn = new mysqli($host, $user, $password, $database);
+if ($conn->connect_error) {
+    die("Erro de conexão: " . $conn->connect_error);
 }
+
+// Definir o nome do site
+$site_name = "Bairro Mesa";
 ?>

@@ -15,8 +15,6 @@ require_once 'config.php'; // Inclui o arquivo de configuração da conexão com
         <h1>Registar</h1>
 
         <?php
-        require_once 'config.php';
-        
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $nome = trim($_POST['nome']);
             $email = trim($_POST['email']);
@@ -28,7 +26,8 @@ require_once 'config.php'; // Inclui o arquivo de configuração da conexão com
             } elseif ($senha !== $confirmar_senha) {
                 echo "<p style='color: red;'>As senhas não coincidem.</p>";
             } else {
-                $conn = new mysqli("localhost", "root", "", "Bairro_Mesa");
+                // Conexão com o banco de dados
+                $conn = new mysqli("localhost", "root", "", "bairro_mesa");
                 
                 if ($conn->connect_error) {
                     die("Conexão falhou: " . $conn->connect_error);
@@ -36,17 +35,34 @@ require_once 'config.php'; // Inclui o arquivo de configuração da conexão com
                 
                 $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
                 
-                $sql = "INSERT INTO utilizadores (nome, email, senha) VALUES (?, ?, ?)";
-                $stmt = $conn->prepare($sql);
-                $stmt->bind_param("sss", $nome, $email, $senha_hash);
+                // Verificar se o email já existe
+                $sql_check = "SELECT email FROM utilizadores WHERE email = ?";
+                $stmt_check = $conn->prepare($sql_check);
+                $stmt_check->bind_param("s", $email);
+                $stmt_check->execute();
+                $result_check = $stmt_check->get_result();
                 
-                if ($stmt->execute()) {
-                    echo "<p style='color: green;'>Registro bem sucedido! <a href='login.php'>Faça login aqui</a>.</p>";
+                if ($result_check->num_rows > 0) {
+                    echo "<p style='color: red;'>Este email já está registrado.</p>";
                 } else {
-                    echo "<p style='color: red;'>Erro ao registrar. Tente novamente.</p>";
+                    // Prosseguir com o INSERT
+                    $sql = "INSERT INTO utilizadores (nome, email, senha) VALUES (?, ?, ?)";
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bind_param("sss", $nome, $email, $senha_hash);
+                    
+                    if ($stmt->execute()) {
+                        // Exibir alert e redirecionar
+                        echo "<script>
+                                alert('Registro bem sucedido! Você será redirecionado para o login em 2 segundos.');
+                                setTimeout(function() {
+                                    window.location.href = 'login.php';
+                                }, 2000);
+                              </script>";
+                    } else {
+                        echo "<p style='color: red;'>Erro ao registrar. Tente novamente.</p>";
+                    }
                 }
-                
-                $stmt->close();
+                $stmt_check->close();
                 $conn->close();
             }
         }

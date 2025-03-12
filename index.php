@@ -41,7 +41,7 @@ require_once 'config.php'; // Inclui o arquivo de configuração da conexão com
     </main>
 
     <footer>
-        <p>&copy; <?= date("Y") ?> <?= $site_name ?>. Todos os direitos reservados.</p>
+        <p>&copy; <?= date("Y") ?> <?= $site_name ?> Todos os direitos reservados.</p>
     </footer>
 </body>
 </html>

@@ -35,7 +35,13 @@
                 if ($result->num_rows > 0) {
                     $user = $result->fetch_assoc();
                     if (password_verify($senha, $user['senha'])) {
-                        echo "<p style='color: green;'>Login bem sucedido!</p>";
+                        // Exibir alert e redirecionar para index.php
+                        echo "<script>
+                                alert('Login bem sucedido! Você será redirecionado para a página inicial em 2 segundos.');
+                                setTimeout(function() {
+                                    window.location.href = 'index.php';
+                                }, 2000);
+                              </script>";
                     } else {
                         echo "<p style='color: red;'>Senha incorreta.</p>";
                     }
@@ -53,7 +59,6 @@
         <form action="" method="post">
             <label for="email">Email</label>
             <input type="email" id="email" name="email" placeholder="Insira o seu email" required>
-            <br><br>
             <label for="senha">Senha</label>
             <input type="password" id="senha" name="senha" placeholder="Insira a sua senha" required>
             <br><br>
