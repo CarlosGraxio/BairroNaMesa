@@ -1,13 +1,11 @@
-<?php
-require_once 'config.php'; // Inclui o arquivo de configuração da conexão
-?>
+<?php require_once 'config.php'; ?>
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contacto</title>
-    <link rel="stylesheet" href="style1.css">
+    <title>Contacto - <?= $site_name ?></title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
@@ -36,7 +34,7 @@ require_once 'config.php'; // Inclui o arquivo de configuração da conexão
         </section>
     </main>
     <footer>
-        <p>&copy; 2025 <?= $site_name ?>. Todos os direitos reservados.</p>
+        <p>© <?= date("Y") ?> <?= $site_name ?>. Todos os direitos reservados.</p>
     </footer>
 </body>
 </html>
