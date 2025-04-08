@@ -1,0 +1,175 @@
+#detalhes-restaurante {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+#detalhes-restaurante img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.filtro-avaliacoes {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.filtro-avaliacoes a {
+    display: inline-block;
+    padding: 10px 15px;
+    margin-bottom: -1px;
+    text-decoration: none;
+    color: #666;
+    font-weight: bold;
+}
+
+.filtro-avaliacoes a.ativo {
+    color: #007bff;
+    border-bottom: 2px solid #007bff;
+}
+
+.filtro-avaliacoes a:hover {
+    color: #0056b3;
+}
+
+.avaliacoes-lista {
+    margin: 20px 0;
+}
+
+.avaliacao-item {
+    padding: 15px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.avaliacao-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.usuario-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.usuario-nome {
+    display: block;
+    font-weight: bold;
+    color: #333;
+}
+
+.data {
+    color: #666;
+    font-size: 12px;
+}
+
+.nota {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.nota .estrelas {
+    color: #ffd700;
+    font-size: 18px;
+}
+
+.nota .nota-numero {
+    font-weight: bold;
+    color: #333;
+}
+
+.comentario {
+    margin: 10px 0;
+    color: #333;
+    line-height: 1.5;
+}
+
+.avaliacao-acoes {
+    display: flex;
+    gap: 10px;
+}
+
+.avaliacao-acoes .acao {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.avaliacao-acoes .acao:hover {
+    color: #007bff;
+}
+
+.avaliacao-acoes .contador {
+    font-size: 12px;
+    color: #999;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.form-group textarea {
+    resize: vertical;
+}
+
+button[type="submit"] {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+.erro {
+    color: #d9534f;
+    background-color: #f2dede;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.sucesso {
+    color: #3c763d;
+    background-color: #dff0d8;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
