@@ -4,8 +4,19 @@ if (!isset($pdo) || $pdo === null) {
     die("Erro: Conexão com o banco de dados não estabelecida.");
 }
 
-// Handle search query
-$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$categoria_id = filter_input(INPUT_GET, 'categoria_id', FILTER_VALIDATE_INT);
+$where = $categoria_id ? "WHERE r.categoria_id = ?" : "";
+$params = $categoria_id ? [$categoria_id] : [];
+
+$sql = "SELECT r.id, r.nome, r.descricao, c.nome AS categoria FROM restaurantes r LEFT JOIN categorias c ON r.categoria_id = c.id $where";
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$restaurantes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch categories
+$sql = "SELECT id, nome FROM categorias ORDER BY nome";
+$stmt = $pdo->query($sql);
+$categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="pt-pt">
@@ -13,7 +24,7 @@ $search = isset($_GET['search']) ? trim($_GET['search']) : '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurantes - <?= $site_name ?></title>
-    <link rel="stylesheet" href="style4.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
@@ -24,7 +35,7 @@ $search = isset($_GET['search']) ? trim($_GET['search']) : '';
         <nav>
             <ul>
                 <li><a href="index.php">Início</a></li>
-                <li><a href="">Restaurantes</a></li>
+                <li><a href="restaurantes.php">Restaurantes</a></li>
                 <li><a href="sobre.php">Sobre</a></li>
                 <li><a href="contacto.php">Contacto</a></li>
             </ul>
@@ -34,64 +45,31 @@ $search = isset($_GET['search']) ? trim($_GET['search']) : '';
     <main>
         <section id="restaurantes">
             <h2>Conheça os melhores restaurantes</h2>
-            <div class="search-container">
-                <form method="GET" action="">
-                    <input type="text" name="search" placeholder="Pesquisar restaurantes..." 
-                           value="<?= htmlspecialchars($search) ?>">
-                    <button type="submit">Pesquisar</button>
-                </form>
-            </div>
+            <form action="" method="get">
+                <label for="categoria_id">Filtrar por Categoria</label>
+                <select name="categoria_id" id="categoria_id" onchange="this.form.submit()">
+                    <option value="">Todas as Categorias</option>
+                    <?php foreach ($categorias as $categoria): ?>
+                        <option value="<?= $categoria['id'] ?>" <?= $categoria_id == $categoria['id'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($categoria['nome']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </form>
             <div class="container">
-                <?php
-                // Consulta SQL ajustada para lidar com valores nulos na coluna 'nota'
-                $sql = "SELECT r.id, r.nome, r.descricao, 
-                        AVG(COALESCE(a.nota, 0)) as media_avaliacao, 
-                        COUNT(a.id) as total_avaliacoes
-                        FROM restaurantes r
-                        LEFT JOIN avaliacoes a ON r.id = a.restaurante_id";
-                if (!empty($search)) {
-                    $sql .= " WHERE r.nome LIKE :search OR r.descricao LIKE :search";
-                }
-                $sql .= " GROUP BY r.id, r.nome, r.descricao";
-
-                try {
-                    $stmt = $pdo->prepare($sql);
-                    
-                    if (!empty($search)) {
-                        $stmt->bindValue(':search', '%' . $search . '%');
-                    }
-                    
-                    $stmt->execute();
-                    
-                    if ($stmt->rowCount() > 0) {
-                        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                            echo '<div class="card">';
-                            echo '<img src="get_imagem.php?id=' . $row['id'] . '" alt="' . htmlspecialchars($row['nome']) . '">';
-                            echo '<h3>' . htmlspecialchars($row['nome']) . '</h3>';
-                            echo '<p>' . htmlspecialchars($row['descricao']) . '</p>';
-                            
-                            // Exibir avaliações
-                            echo '<div class="avaliacao">';
-                            if ($row['total_avaliacoes'] > 0 && $row['media_avaliacao'] > 0) {
-                                $media = round($row['media_avaliacao'], 1);
-                                echo '<span class="estrelas">' . str_repeat('★', floor($media)) . str_repeat('☆', 5 - floor($media)) . '</span>';
-                                echo '<span class="media"> ' . $media . ' (' . $row['total_avaliacoes'] . ' avaliações)</span>';
-                            } else {
-                                echo '<span>Sem avaliações ainda</span>';
-                            }
-                            echo '</div>';
-                            
-                            echo '<a href="detalhes.php?id=' . $row['id'] . '" class="btn">Ver mais</a>';
-                            echo '</div>';
-                        }
-                    } else {
-                        echo '<p>Nenhum restaurante encontrado' . (!empty($search) ? ' para a pesquisa "' . htmlspecialchars($search) . '"' : '') . '.</p>';
-                    }
-                } catch (PDOException $e) {
-                    echo '<p>Erro ao buscar restaurantes: ' . htmlspecialchars($e->getMessage()) . '</p>';
-                    exit;
-                }
-                ?>
+                <?php if ($restaurantes): ?>
+                    <?php foreach ($restaurantes as $restaurante): ?>
+                        <div class="card">
+                            <img src="get_imagem.php?id=<?= $restaurante['id'] ?>" alt="<?= htmlspecialchars($restaurante['nome']) ?>">
+                            <h3><?= htmlspecialchars($restaurante['nome']) ?></h3>
+                            <p><strong>Categoria:</strong> <?= htmlspecialchars($restaurante['categoria']) ?></p>
+                            <p><?= htmlspecialchars($restaurante['descricao']) ?></p>
+                            <a href="detalhes.php?id=<?= $restaurante['id'] ?>" class="btn">Ver mais</a>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p>Nenhum restaurante encontrado.</p>
+                <?php endif; ?>
             </div>
         </section>
     </main>

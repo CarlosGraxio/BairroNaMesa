@@ -1,4 +1,11 @@
-<?php require_once 'config.php'; ?>
+<?php
+require_once 'config.php';
+session_start();
+// Generate CSRF token
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-pt">
 <head>
@@ -18,7 +25,7 @@
                 <li><a href="index.php">Início</a></li>
                 <li><a href="restaurantes.php">Restaurantes</a></li>
                 <li><a href="sobre.php">Sobre</a></li>
-                <li><a href="">Contacto</a></li>
+                <li><a href="contacto.php">Contacto</a></li>
             </ul>
         </nav>
     </header>
@@ -26,6 +33,7 @@
         <section>
             <h2>Entre em contacto connosco</h2>
             <form action="envio.php" method="post">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <input type="text" name="nome" placeholder="Nome" required>
                 <input type="email" name="email" placeholder="Email" required>
                 <textarea name="mensagem" rows="5" placeholder="Mensagem" required></textarea>

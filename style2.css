@@ -1,4 +1,4 @@
-/* login.php*/
+/* Reset básico para remover margens e paddings padrão */
 * {
     margin: 0;
     padding: 0;
@@ -7,7 +7,7 @@
 }
 
 body {
-    background-color: #f8f8f8;
+    background-color: #f0f0f0;
     color: #333;
     text-align: center;
     display: flex;
@@ -86,4 +86,19 @@ p a {
 
 p a:hover {
     text-decoration: underline;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+}
+th {
+    background-color: #ff6600;
+    color: white;
 }

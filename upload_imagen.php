@@ -2,8 +2,13 @@
 require_once 'config.php';
 session_start();
 
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $restaurante_id = $_POST['restaurante_id'] ?? null;
+    $restaurante_id = filter_input(INPUT_POST, 'restaurante_id', FILTER_VALIDATE_INT);
     $imagem = $_FILES['imagem'] ?? null;
 
     if (!$restaurante_id || !$imagem) {
@@ -11,26 +16,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } elseif ($imagem['error'] !== UPLOAD_ERR_OK) {
         $erro = "Erro ao fazer upload da imagem.";
     } else {
-        // Verificar o tipo de arquivo
         $tipos_permitidos = ['image/jpeg', 'image/png', 'image/gif'];
+        $max_size = 5 * 1024 * 1024; // 5MB
+        $ext = pathinfo($imagem['name'], PATHINFO_EXTENSION);
+        $filename = uniqid() . '.' . $ext;
+        $target_dir = "../assets/uploads/";
+        $target_file = $target_dir . $filename;
+
         if (!in_array($imagem['type'], $tipos_permitidos)) {
             $erro = "Apenas arquivos JPEG, PNG e GIF são permitidos.";
+        } elseif ($imagem['size'] > $max_size) {
+            $erro = "A imagem é muito grande. Máximo 5MB.";
+        } elseif (!move_uploaded_file($imagem['tmp_name'], $target_file)) {
+            $erro = "Erro ao salvar imagem.";
         } else {
-            // Definir o caminho de destino
-            $target_dir = "uploads/";
-            $imagem_nome = uniqid() . '-' . basename($imagem['name']); // Nome único para evitar conflitos
-            $target_file = $target_dir . $imagem_nome;
-
-            // Mover o arquivo para a pasta uploads
-            if (move_uploaded_file($imagem['tmp_name'], $target_file)) {
-                // Atualizar o caminho da imagem no banco de dados
-                $sql = "UPDATE restaurantes SET imagem = ? WHERE id = ?";
+            try {
+                $sql = "UPDATE restaurantes SET imagem_path = ?, imagem_tipo = ? WHERE id = ?";
                 $stmt = $pdo->prepare($sql);
-                $stmt->execute([$target_file, $restaurante_id]);
-
+                $stmt->execute([$target_file, $imagem['type'], $restaurante_id]);
                 $sucesso = "Imagem enviada com sucesso!";
-            } else {
-                $erro = "Erro ao salvar a imagem no servidor.";
+            } catch (PDOException $e) {
+                $erro = "Erro ao salvar imagem: " . $e->getMessage();
             }
         }
     }
