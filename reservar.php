@@ -66,7 +66,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (isset($sucesso)) echo "<p style='color: green;'>$sucesso</p>";
             ?>
             <form action="" method="post">
-                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <label for="data_reserva">Data e Hora</label>
                 <input type="datetime-local" name="data_reserva" id="data_reserva" required>
                 <label for="num_pessoas">Número de Pessoas</label>

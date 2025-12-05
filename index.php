@@ -12,13 +12,19 @@
 $page_title = "Início";
 require_once 'header.php';
 ?>
-<section id="Inicio">
-    <h2>Bem-vindo ao <?= $site_name ?>!</h2>
-    <p>Descubra os melhores restaurantes no seu bairro e explore sabores incríveis.</p>
-    <form action="restaurantes.php" method="get">
-        <input type="text" name="search" placeholder="Pesquisar restaurantes..." required>
-        <button type="submit">Pesquisar</button>
-    </form>
-    <li><a href="favoritos.php">Favoritos</a></li>
+<section class="hero">
+    <div class="hero-content">
+        <h1>Descubra e reserve os melhores<br><span>restaurantes</span></h1>
+        <form class="search-form" action="restaurantes.php" method="get">
+            <div class="location">
+                <input type="text" name="cidade" value="📍Lisboa" readonly>
+            </div>
+            <input type="text" name="search" placeholder="Cozinha, nome do restaurante…" required>
+            <button type="submit">PESQUISAR</button>
+        </form>
+        <div class="favoritos-link">
+            <a href="favoritos.php">❤️Favoritos</a>
+        </div>
+    </div>
 </section>
 <?php require_once 'footer.php'; ?>

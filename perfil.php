@@ -1,132 +1,182 @@
 <?php
 session_start();
-require_once 'config.php';
+require 'config.php';
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+// Verificar sessão
+if (!isset($_SESSION['utilizadores_id'])) {
+    echo "<script>alert('É necessário estar logado para acessar o perfil.'); window.location.href='login.php';</script>";
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
+$utilizadores_id = $_SESSION['utilizadores_id'];
+$mensagem = "";
 
-try {
-    $sql = "SELECT nome, email, telefone, foto_perfil FROM utilizadores WHERE id = ?";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$user_id]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$user) {
-        header("Location: login.php");
-        exit();
-    }
-
-    $sql = "SELECT r.nome, res.data_reserva, res.num_pessoas, res.status FROM reservas res JOIN restaurantes r ON res.restaurante_id = r.id WHERE res.user_id = ? ORDER BY res.data_reserva DESC";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$user_id]);
-    $reservas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    die("Erro ao buscar usuário: " . $e->getMessage());
+// Criar token CSRF se não existir
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nome = trim(filter_input(INPUT_POST, 'nome', FILTER_SANITIZE_STRING));
-    $email = trim(filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL));
-    $telefone = trim(filter_input(INPUT_POST, 'telefone', FILTER_SANITIZE_STRING));
-    $senha = trim($_POST['senha']);
-    $foto_perfil = $user['foto_perfil'];
+/* ==========================================================
+   BUSCAR DADOS DO UTILIZADOR
+   ========================================================== */
 
-    // Validate file upload
-    if (isset($_FILES['foto_perfil']) && $_FILES['foto_perfil']['error'] == 0) {
-        $tipos_permitidos = ['image/jpeg', 'image/png', 'image/gif'];
-        $max_size = 2 * 1024 * 1024; // 2MB
-        $ext = pathinfo($_FILES['foto_perfil']['name'], PATHINFO_EXTENSION);
-        $filename = uniqid() . '.' . $ext;
-        $target_dir = "../assets/uploads/";
-        $target_file = $target_dir . $filename;
+$sql = "SELECT nome, apelido, foto_perfil FROM utilizadores WHERE id = ?";
+$stmt = $pdo->prepare($sql);
+$stmt->execute([$utilizadores_id]);
+$utilizador = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!in_array($_FILES['foto_perfil']['type'], $tipos_permitidos)) {
-            $mensagem = "<p style='color: red;'>Apenas JPEG, PNG ou GIF são permitidos.</p>";
-        } elseif ($_FILES['foto_perfil']['size'] > $max_size) {
-            $mensagem = "<p style='color: red;'>Arquivo muito grande. Máximo 2MB.</p>";
-        } elseif (!move_uploaded_file($_FILES['foto_perfil']['tmp_name'], $target_file)) {
-            $mensagem = "<p style='color: red;'>Erro ao fazer upload da foto.</p>";
-        } else {
-            $foto_perfil = $target_file;
+if (!$utilizador) {
+    echo "<script>alert('Conta não encontrada.'); window.location.href='logout.php';</script>";
+    exit();
+}
+
+/* ==========================================================
+   REMOVER FOTO DE PERFIL
+   ========================================================== */
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['remover_foto'])) {
+
+    if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        $mensagem = "Erro de validação.";
+    } else {
+        if ($utilizador['foto_perfil'] && file_exists($utilizador['foto_perfil'])) {
+            unlink($utilizador['foto_perfil']);
         }
+
+        $sql = "UPDATE utilizadores SET foto_perfil = NULL WHERE id = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$utilizadores_id]);
+
+        $mensagem = "Foto removida com sucesso.";
+        $utilizador['foto_perfil'] = null;
     }
+}
 
-    try {
-        if (!empty($senha)) {
-            $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
-            $sql = "UPDATE utilizadores SET nome = ?, email = ?, telefone = ?, senha = ?, foto_perfil = ? WHERE id = ?";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$nome, $email, $telefone, $senha_hash, $foto_perfil, $user_id]);
-        } else {
-            $sql = "UPDATE utilizadores SET nome = ?, email = ?, telefone = ?, foto_perfil = ? WHERE id = ?";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$nome, $email, $telefone, $foto_perfil, $user_id]);
+/* ==========================================================
+   ATUALIZAR PERFIL
+   ========================================================== */
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['salvar_perfil'])) {
+
+    if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        $mensagem = "Erro de validação.";
+    } else {
+
+        $nome = trim($_POST['nome']);
+        $apelido = trim($_POST['apelido']);
+
+        $erros = [];
+
+        if (empty($apelido)) $erros[] = "O nome de utilizador é obrigatório.";
+        if (empty($nome))    $erros[] = "O nome completo é obrigatório.";
+
+        // Verificar se apelido já existe
+        $sql = "SELECT id FROM utilizadores WHERE apelido = ? AND id != ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$apelido, $utilizadores_id]);
+        if ($stmt->rowCount() > 0) {
+            $erros[] = "Este nome de utilizador já está em uso.";
         }
-        $mensagem = "<p style='color: green;'>Perfil atualizado com sucesso!</p>";
-    } catch (PDOException $e) {
-        $mensagem = "<p style='color: red;'>Erro ao atualizar perfil: " . $e->getMessage() . "</p>";
+
+        if (empty($erros)) {
+
+            // Atualizar nome e apelido
+            $sql = "UPDATE utilizadores SET nome = ?, apelido = ? WHERE id = ?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$nome, $apelido, $utilizadores_id]);
+
+            // Upload da foto
+            if (!empty($_FILES['foto_perfil']['name'])) {
+                $foto = $_FILES['foto_perfil'];
+                $ext = strtolower(pathinfo($foto['name'], PATHINFO_EXTENSION));
+                $permitidos = ['jpg', 'jpeg', 'png', 'gif'];
+
+                if (in_array($ext, $permitidos)) {
+
+                    $dir = "img/perfil/";
+                    if (!is_dir($dir)) mkdir($dir, 0777, true);
+
+                    $novo_nome = $dir . "perfil_" . $utilizadores_id . "_" . time() . "." . $ext;
+
+                    if (move_uploaded_file($foto['tmp_name'], $novo_nome)) {
+
+                        // apagar anterior
+                        if ($utilizador['foto_perfil'] && file_exists($utilizador['foto_perfil']))
+                            unlink($utilizador['foto_perfil']);
+
+                        $sql = "UPDATE utilizadores SET foto_perfil = ? WHERE id = ?";
+                        $stmt = $pdo->prepare($sql);
+                        $stmt->execute([$novo_nome, $utilizadores_id]);
+
+                        $mensagem .= " Foto atualizada com sucesso!";
+                        $utilizador['foto_perfil'] = $novo_nome;
+
+                    } else {
+                        $mensagem .= " Erro ao enviar foto.";
+                    }
+
+                } else {
+                    $mensagem .= " Tipos permitidos: JPG, JPEG, PNG, GIF.";
+                }
+            }
+
+            if (!$mensagem) $mensagem = "Perfil atualizado com sucesso!";
+        } else {
+            $mensagem = implode("<br>", $erros);
+        }
     }
 }
 ?>
+
 <!DOCTYPE html>
-<html lang="pt-pt">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil - <?= $site_name ?></title>
-    <link rel="stylesheet" href="style2.css">
+    <title>Configurações - Bairro na Mesa</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="login-container">
-        <h1>Configurações do Perfil</h1>
-        <?php if (isset($mensagem)) echo $mensagem; ?>
-        <form action="" method="post" enctype="multipart/form-data">
-            <label>Foto de Perfil</label>
-            <div style="margin-bottom: 15px;">
-                <img src="<?= $user['foto_perfil'] ? htmlspecialchars($user['foto_perfil']) : 'image/default_profile.png' ?>" 
-                     alt="Foto de Perfil" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
-                <input type="file" name="foto_perfil" accept="image/*" style="margin-top: 10px;">
-                <section>
-    <h2>Minhas Reservas</h2>
-    <?php if ($reservas): ?>
-        <table>
-            <tr>
-                <th>Restaurante</th>
-                <th>Data</th>
-                <th>Pessoas</th>
-                <th>Status</th>
-            </tr>
-            <?php foreach ($reservas as $reserva): ?>
-                <tr>
-                    <td><?= htmlspecialchars($reserva['nome']) ?></td>
-                    <td><?= date('d/m/Y H:i', strtotime($reserva['data_reserva'])) ?></td>
-                    <td><?= $reserva['num_pessoas'] ?></td>
-                    <td><?= ucfirst($reserva['status']) ?></td>
-                </tr>
-            <?php endforeach; ?>
-        </table>
-    <?php else: ?>
-        <p>Você não tem reservas.</p>
+
+<div class="client-perfil-container">
+    <h1>Configurações</h1>
+
+    <?php if ($mensagem): ?>
+        <p class="client-perfil-message"><?= $mensagem ?></p>
     <?php endif; ?>
-</section>
-            </div>
-            <label for="nome">Nome</label>
-            <input type="text" id="nome" name="nome" value="<?= htmlspecialchars($user['nome']) ?>" required>
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" required>
-            <label for="telefone">Telefone</label>
-            <input type="text" id="telefone" name="telefone" value="<?= htmlspecialchars($user['telefone'] ?? '') ?>" placeholder="Insira seu telefone">
-            <label for="senha">Nova Senha (deixe em branco para não alterar)</label>
-            <input type="password" id="senha" name="senha" placeholder="Insira uma nova senha">
-            <button type="submit">Salvar Alterações</button>
-        </form>
-        <p><a href="index.php">Voltar ao Início</a></p>
+
+    <!-- FOTO -->
+    <div class="client-perfil-photo-section">
+        <?php if ($utilizador['foto_perfil']): ?>
+            <img src="<?= htmlspecialchars($utilizador['foto_perfil']) ?>" class="client-perfil-photo">
+
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <button type="submit" name="remover_foto">Remover Foto</button>
+            </form>
+
+        <?php else: ?>
+            <p>Sem foto de perfil</p>
+        <?php endif; ?>
     </div>
+
+    <form method="POST" enctype="multipart/form-data" class="client-perfil-form">
+        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+
+        <label>Nova Foto:</label>
+        <input type="file" name="foto_perfil" accept="image/*">
+
+        <label>Nome Completo:</label>
+        <input type="text" name="nome" value="<?= htmlspecialchars($utilizador['nome']) ?>" required>
+
+        <label>Nome de Utilizador:</label>
+        <input type="text" name="apelido" value="<?= htmlspecialchars($utilizador['apelido']) ?>" required>
+
+        <button type="submit" name="salvar_perfil">Salvar Alterações</button>
+    </form>
+
+    <a href="configuracoes.php">Editar Endereços</a><br>
+    <a href="index.php">Voltar ao Início</a>
+</div>
+
 </body>
 </html>
-
-

@@ -2,12 +2,12 @@
 require_once 'config.php';
 session_start();
 
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['utilizadores_id'])) {
     header("Location: login.php");
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['utilizadores_id'];
 
 // Handle adding/removing favorites
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -16,13 +16,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($restaurante_id && in_array($action, ['add', 'remove'])) {
         if ($action === 'add') {
-            $sql = "INSERT INTO favoritos (user_id, restaurante_id) VALUES (?, ?)";
+            $sql = "INSERT INTO favoritos (utilizador_id, restaurante_id) VALUES (?, ?)";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$user_id, $restaurante_id]);
         } elseif ($action === 'remove') {
-            $sql = "DELETE FROM favoritos WHERE user_id = ? AND restaurante_id = ?";
+            $sql = "DELETE FROM favoritos WHERE utilizadores_id = ? AND restaurante_id = ?";
             $stmt = $pdo->prepare($sql);
-            $stmt->execute([$user_id, $restaurante_id]);
+            $stmt->execute([$utilizadores_id, $restaurante_id]);
         }
         header("Location: detalhes.php?id=$restaurante_id");
         exit();
@@ -46,7 +46,7 @@ $favoritos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <body>
     <header>
         <div class="logo">
-            <img src="image/logo.png" alt="Logo do <?= $site_name ?>" style="height: 50px;">
+            <img src=".image/logo.png" alt="Logo do <?= $site_name ?>" style="height: 50px;">
         </div>
         <h1>Meus Favoritos</h1>
         <nav>

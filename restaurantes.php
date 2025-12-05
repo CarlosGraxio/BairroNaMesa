@@ -35,6 +35,7 @@ $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <nav>
             <ul>
                 <li><a href="index.php">Início</a></li>
+                 <li><a href="perfil.php">Perfil</a></li>
                 <li><a href="restaurantes.php">Restaurantes</a></li>
                 <li><a href="sobre.php">Sobre</a></li>
                 <li><a href="contacto.php">Contacto</a></li>

@@ -18,7 +18,7 @@ try {
         readfile($row['imagem_path']);
     } else {
         header('Content-Type: image/jpeg');
-        readfile('image/default.jpg');
+        readfile('images/default.jpg');
     }
 } catch (PDOException $e) {
     header('Content-Type: image/jpeg');
