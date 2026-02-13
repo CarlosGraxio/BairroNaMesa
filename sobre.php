@@ -1,13 +1,10 @@
-<?php
-require_once 'config.php'; // Inclui o arquivo de configuração da conexão
-?>
-
+<?php require_once 'config.php'; ?>
 <!DOCTYPE html>
 <html lang="pt-pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sobre Nós</title>
+    <title>Sobre Nós - <?= $site_name ?></title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -28,11 +25,13 @@ require_once 'config.php'; // Inclui o arquivo de configuração da conexão
     <main>
         <section>
             <h2>Quem Somos</h2>
-            <p>Bem-vindo à nossa empresa! Nós somos dedicados a fornecer os melhores serviços e produtos para nossos clientes. Nossa missão é garantir a satisfação total de cada cliente.</p>
+            <p>Bem-vindo ao Bairro na Mesa, o seu guia definitivo para encontrar os melhores restaurantes ao redor! Se você é um amante da boa gastronomia ou está simplesmente procurando um lugar novo para comer, estamos aqui para ajudar.</p>
+            <p>Com uma vasta seleção de restaurantes, desde os mais tradicionais até as opções mais inovadoras, nosso site permite que você explore cardápios, leia avaliações reais de outros clientes, e descubra os pratos mais recomendados por quem já experimentou.</p>
+            <p>Com Bairro na Mesa, encontrar o restaurante ideal nunca foi tão fácil. Faça a sua pesquisa agora e descubra onde saborear a próxima grande refeição!</p>
         </section>
     </main>
     <footer>
-        <p>&copy; 2025 <?= $site_name ?>. Todos os direitos reservados.</p>
+        <p>© <?= date("Y") ?> <?= $site_name ?>. Todos os direitos reservados.</p>
     </footer>
 </body>
 </html>
